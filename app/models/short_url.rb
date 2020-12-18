@@ -28,21 +28,7 @@ class ShortUrl < ApplicationRecord
   def short_code
     return unless self[:id].present?
 
-    char_len = CHARACTERS.length
-    char_arr = []
-
-    calculated_id = self[:id]
-
-    # Calculates the shortcode using the length & values of CHARACTERS.
-    loop do
-      char_arr.push(calculated_id % char_len)
-      calculated_id /= char_len
-
-      break unless calculated_id.positive?
-    end
-
-    char_arr.reverse!
-    char_arr.map { |idx| CHARACTERS[idx] }.join
+    build_short_code(self[:id])
   end
 
   # Updates the title of a ShortUrl by creating an instance of UpdateTitleJob.
@@ -53,28 +39,20 @@ class ShortUrl < ApplicationRecord
 
   # Finds the ShortUrl associated to the code, if it exists.
   #
-  # code: String, shortcode to convert to base 10.
+  # code: String, shortcode to decode.
   #
   # Returns an instance of a ShortUrl.
   def self.find_by_short_code(code)
-    id = 0
-    char_len = CHARACTERS.length
-    key_arr = code.split('')
+    code_to_arr = code.split('')
 
-    key_arr.each_with_index do |char, idx|
-      if idx == key_arr.length - 1
-        id += CHARACTERS.index(char)
-      elsif idx.zero?
-        id += CHARACTERS.index(char) * char_len
-      else
-        id = (id + CHARACTERS.index(char)) * char_len
-      end
-    end
+    id = decode_short_code(code_to_arr, 0, 0)
 
     ShortUrl.find_by!(id: id)
   end
 
   # Valide a shortcode based on key characters.
+  #
+  # code: shortcode to validate
   #
   # Returns a boolean
   def self.validate_short_code(code)
@@ -91,5 +69,40 @@ class ShortUrl < ApplicationRecord
     errors.add(:full_url, 'is not a valid url') unless valid
   rescue URI::InvalidURIError
     errors.add(:full_url, 'is not a valid url')
+  end
+
+  # Recursively find mapping to CHARACTERS using id.
+  # 
+  # id: Id to recursively build shortcode with.
+  #
+  # Returns a shortCode in reverse order.
+  def build_short_code(id)
+    return '' unless id.positive?
+
+    rem_char = CHARACTERS[id % CHARACTERS.length]
+    id /= CHARACTERS.length
+    build_short_code(id) + rem_char
+  end
+
+  # Recursively build the id using the short code.
+  #
+  # char_arr: List of characters in the short code
+  # idx: Current index
+  # sum: Running sum throughout the recursive process
+  #
+  # Returns the sum
+  private_class_method def self.decode_short_code(char_arr, idx, sum)
+    if idx == char_arr.length - 1
+      sum + CHARACTERS.index(char_arr[idx])
+    else
+      sum =
+        if idx.zero?
+          sum + CHARACTERS.index(char_arr[idx]) * CHARACTERS.length
+        else
+          (sum + CHARACTERS.index(char_arr[idx])) * CHARACTERS.length
+        end
+
+      decode_short_code(char_arr, idx + 1, sum)
+    end
   end
 end
