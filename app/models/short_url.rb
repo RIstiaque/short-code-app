@@ -53,10 +53,10 @@ class ShortUrl < ApplicationRecord
     key_arr = code.split('')
 
     key_arr.each_with_index do |char, idx|
-      if idx.zero?
-        id += CHARACTERS.index(char) * char_len
-      elsif idx == key_arr.length - 1
+      if idx == key_arr.length - 1
         id += CHARACTERS.index(char)
+      elsif idx.zero?
+        id += CHARACTERS.index(char) * char_len
       else
         id = (id + CHARACTERS.index(char)) * char_len
       end
