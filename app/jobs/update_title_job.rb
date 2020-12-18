@@ -4,6 +4,8 @@ require 'open-uri'
 class UpdateTitleJob < ApplicationJob
   queue_as :default
 
+  discard_on StandardError
+
   def perform(short_url_id)
     short_url = ShortUrl.find_by!(id: short_url_id)
 
