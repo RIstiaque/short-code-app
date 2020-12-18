@@ -7,16 +7,6 @@ class ShortUrl < ApplicationRecord
 
   after_create :fetch_and_store_title
 
-  # Returns the model properties as json including virtual attributes.
-  #
-  # options: A hash containing the options for the top level behavior of as_json.
-  #          Reference: https://api.rubyonrails.org/classes/ActiveModel/Serializers/JSON.html
-  def as_json(options = {})
-    hash = super options
-    hash['shortCode'] = short_code
-    hash
-  end
-
   # Calls UpdateTitleJob to fetch and set the ShortUrl's title.
   def fetch_and_store_title
     UpdateTitleJob.perform_now(self[:id])

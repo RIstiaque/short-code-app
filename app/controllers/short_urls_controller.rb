@@ -5,10 +5,10 @@ class ShortUrlsController < ApplicationController
   # Since we're working on an API, we don't have authenticity tokens
   skip_before_action :verify_authenticity_token
 
-  # Returns the top 100 most visited shortcodes in desc order.
+  # Returns a JSON object of the top 100 most visited shortcodes.
   def index
     render_or_error do
-      short_codes = ShortUrl.order(click_count: :desc).limit(100).as_json
+      short_codes = ShortUrl.order(click_count: :desc).limit(100).map(&:short_code)
 
       { urls: short_codes }
     end
@@ -19,7 +19,7 @@ class ShortUrlsController < ApplicationController
   # params:
   #   full_url: The url that will be used to create the ShortUrl.
   #
-  # Returns the shortcode of the created ShortUrl.
+  # Returns a JSON object of the created ShortUrl's shortcode.
   def create
     render_or_error(:created) do
       full_url = params.require(:full_url)
