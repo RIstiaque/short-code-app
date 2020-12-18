@@ -5,18 +5,20 @@ RSpec.describe ShortUrlsController, type: :controller do
   let(:parsed_response) { JSON.parse(response.body) }
 
   describe "index" do
+    subject { get :index, format: :json }
 
     let!(:short_url) { ShortUrl.create(full_url: "https://www.test.rspec") }
 
+    before do
+      subject
+    end
+
     it "is a successful response" do
-      get :index, format: :json
       expect(response.status).to eq 200
     end
 
     it "has a list of the top 100 urls" do
-      get :index, format: :json
-
-      expect(parsed_response['urls']).to be_include(short_url.public_attributes)
+      expect(parsed_response['urls']).to be_include(short_url.short_code)
     end
 
   end
@@ -30,9 +32,13 @@ RSpec.describe ShortUrlsController, type: :controller do
 
     it "does not create a short_url" do
       post :create, params: { full_url: "nope!" }, format: :json
-      expect(parsed_response['errors']).to be_include("Full url is not a valid url")
+      expect(parsed_response['errors']).to include("Full url is not a valid url")
     end
 
+    it 'requires full_url param' do
+      post :create, params: { full_url: "" }, format: :json
+      expect(parsed_response['errors']).to include("param is missing or the value is empty: full_url")
+    end
   end
 
   describe "show" do
