@@ -3,7 +3,15 @@ class ShortUrl < ApplicationRecord
 
   CHARACTERS = [*'0'..'9', *'a'..'z', *'A'..'Z'].freeze
 
+  validates_presence_of :full_url
   validate :validate_full_url
+
+  after_create :fetch_and_store_title
+
+  # Calls UpdateTitleJob to fetch and set the ShortUrl's title.
+  def fetch_and_store_title
+    UpdateTitleJob.perform_now(self[:id])
+  end
 
   # Converts the id of a ShortUrl to a shortcode.
   #
@@ -28,7 +36,33 @@ class ShortUrl < ApplicationRecord
     char_arr.map { |idx| CHARACTERS[idx] }.join
   end
 
+  # Updates the title of a ShortUrl by creating an instance of UpdateTitleJob.
   def update_title!
+    self[:title] = reload.title
+    save!
+  end
+
+  # Finds the ShortUrl associated to the code, if it exists.
+  #
+  # code: String, shortcode to convert to base 10.
+  #
+  # Returns an instance of a ShortUrl.
+  def self.find_by_short_code(code)
+    id = 0
+    char_len = CHARACTERS.length
+    key_arr = code.split('')
+
+    key_arr.each_with_index do |char, idx|
+      if idx.zero?
+        id += CHARACTERS.index(char) * char_len
+      elsif idx == key_arr.length - 1
+        id += CHARACTERS.index(char)
+      else
+        id = (id + CHARACTERS.index(char)) * char_len
+      end
+    end
+
+    ShortUrl.find_by!(id: id)
   end
 
   private
