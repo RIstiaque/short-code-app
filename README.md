@@ -38,4 +38,5 @@ We can convert the entry ID (hereby known as id) into a unique character key of 
 
 Using recursion we can see faster results than its iterative counterpart up until the number of urls in the database nears 1 billion.
 
-Please Note: When testing on paper, I found that the shortest possible code for a record of 1 should be the first entry of the character key which is 0, because these ID's do not start at 0 (for mariadb). Therefore, in order to pass all the original tests, I took out initially subtracting one to the ID. I believe that the correct way to write this would be to first subtract one from the ID to start with, and then do the process explained above - but the tests did not agree.
+<Strong>Please Note:</Strong>
+When testing on paper, I found that the shortest possible code for a record of 1 should be the first entry of the character key which is 0, because these ID's do not start at 0 (for mariadb). Therefore, in order to pass all the original tests, I took out initially subtracting one to the ID. I believe that the correct way to write this would be to first subtract one from the ID to start with, and then do the process explained above - but the tests did not agree.
