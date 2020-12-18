@@ -39,7 +39,7 @@ class ShortUrlsController < ApplicationController
   # Redirects to the associated URL.
   def show
     render_or_error(:found) do
-      short_code = params[:id]
+      short_code = params[:id].to_s
 
       short_code_valid = ShortUrl.validate_short_code(short_code)
       raise StandardError, 'Shortcode `${short_code}` is invalid.' unless short_code_valid
