@@ -1,6 +1,5 @@
 # ShortUrl Model which that maps urls to short codes.
 class ShortUrl < ApplicationRecord
-
   CHARACTERS = [*'0'..'9', *'a'..'z', *'A'..'Z'].freeze
 
   validates_presence_of :full_url
